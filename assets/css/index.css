@@ -251,7 +251,7 @@
             display: flex;
             justify-content: center;
             gap: 60px;
-            margin: 80px 0;
+            margin-top: 40px 0;
             flex-wrap: wrap;
         }
 
