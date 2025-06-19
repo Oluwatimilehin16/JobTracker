@@ -95,29 +95,7 @@
                 <p>Visualize your job search progress with comprehensive dashboards, success rates, and actionable insights to improve your strategy.</p>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-bell"></i>
-                </div>
-                <h3>Smart Reminders</h3>
-                <p>Never miss important deadlines with intelligent notifications for follow-ups, interviews, and application due dates.</p>
-            </div>
 
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <h3>Document Management</h3>
-                <p>Store and organize your resumes, cover letters, and other application documents in one secure, easily accessible location.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-target"></i>
-                </div>
-                <h3>Goal Setting & Tracking</h3>
-                <p>Set weekly application goals, track your progress, and stay motivated with achievement milestones and progress reports.</p>
-            </div>
         </div>
     </div>
 
