@@ -1,0 +1,91 @@
+        body {
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            color: #a78bfa;
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: #8b5cf6;
+            margin: 10px auto 0;
+            border-radius: 4px;
+        }
+
+        .info {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px 20px;
+            border-left: 4px solid #8b5cf6;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .info:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .label {
+            font-weight: bold;
+            color: #9ca3af;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .value {
+            color: white;
+            margin-top: 4px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 30px;
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #a78bfa;
+        }
+
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        a.value {
+            color: #38bdf8;
+            text-decoration: underline;
+        }
+
+        a.value:hover {
+            color: #60a5fa;
+        }
