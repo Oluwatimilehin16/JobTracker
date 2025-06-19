@@ -24,5 +24,8 @@ RUN chown -R www-data:www-data /var/www/html
 # Expose default Apache port
 EXPOSE 80
 
+# Install PDO MySQL
+RUN docker-php-ext-install pdo pdo_mysql
+
 # Start Apache when the container launches
 CMD ["apache2-foreground"]
