@@ -69,7 +69,7 @@
     </div>
 
     <!-- Features Section -->
-    <div class="hero" id="features">
+    <div class="features-section" id="features">
         <div class="features">
             <div class="feature-card">
                 <div class="feature-icon">
@@ -94,8 +94,6 @@
                 <h3>Performance Analytics</h3>
                 <p>Visualize your job search progress with comprehensive dashboards, success rates, and actionable insights to improve your strategy.</p>
             </div>
-
-
         </div>
     </div>
 
