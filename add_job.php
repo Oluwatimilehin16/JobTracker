@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-include 'config.php';
+include 'config.php'; // Must define $conn (MySQLi object)
 
 $message = '';
 $messageType = '';
@@ -45,11 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['application_date'] = 'Application date is required';
     }
 
-    // If no errors, proceed with database insertion
+    // If no errors, insert into DB
     if (empty($errors)) {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO job_applications (user_id, job_title, company, application_link, status, location, salary_range, application_date, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-            $result = $stmt->execute([
+        $stmt = $conn->prepare("INSERT INTO job_applications (
+            user_id, job_title, company, application_link, status, location, salary_range, application_date, notes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+
+        if ($stmt) {
+            $stmt->bind_param(
+                "issssssss",
                 $_SESSION['user_id'],
                 $jobTitle,
                 $company,
@@ -59,20 +63,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $salaryRange,
                 $applicationDate,
                 $notes
-            ]);
+            );
 
-            if ($result) {
-                $message = 'Job application added successfully!';
+            if ($stmt->execute()) {
+                $message = '✅ Job application added successfully!';
                 $messageType = 'success';
-                // Clear form data on success
+                // Clear form values
                 $jobTitle = $company = $applicationLink = $location = $salaryRange = $applicationDate = $notes = '';
                 $status = '';
             } else {
-                $message = 'Failed to add job application. Please try again.';
+                $message = '❌ Failed to add job application. Please try again.';
                 $messageType = 'error';
             }
-        } catch (PDOException $e) {
-            $message = 'Database error: ' . $e->getMessage();
+
+            $stmt->close();
+        } else {
+            $message = '❌ Statement prepare failed: ' . $conn->error;
             $messageType = 'error';
         }
     }

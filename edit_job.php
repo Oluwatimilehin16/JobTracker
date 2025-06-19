@@ -15,9 +15,12 @@ if ($jobId <= 0) {
     die('Invalid job ID.');
 }
 
-$stmt = $pdo->prepare("SELECT * FROM job_applications WHERE id = ? AND user_id = ?");
-$stmt->execute([$jobId, $_SESSION['user_id']]);
-$job = $stmt->fetch(PDO::FETCH_ASSOC);
+$query = "SELECT * FROM job_applications WHERE id = ? AND user_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("ii", $jobId, $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$job = $result->fetch_assoc();
 
 if (!$job) {
     die('Job not found.');
@@ -34,22 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes = trim($_POST['notes']);
     $date = $_POST['application_date'];
 
-    try {
-        $update = $pdo->prepare("UPDATE job_applications SET job_title=?, company=?, status=?, location=?, salary_range=?, application_link=?, notes=?, application_date=? WHERE id=? AND user_id=?");
-        $updated = $update->execute([$title, $company, $status, $location, $salary, $link, $notes, $date, $jobId, $_SESSION['user_id']]);
+    $updateQuery = "UPDATE job_applications SET job_title=?, company=?, status=?, location=?, salary_range=?, application_link=?, notes=?, application_date=? WHERE id=? AND user_id=?";
+    $update = $conn->prepare($updateQuery);
+    $update->bind_param("ssssssssii", $title, $company, $status, $location, $salary, $link, $notes, $date, $jobId, $_SESSION['user_id']);
 
-        if ($updated) {
-            $message = "Application updated successfully!";
-            $messageType = "success";
-            // Refresh data
-            $stmt->execute([$jobId, $_SESSION['user_id']]);
-            $job = $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            $message = "Update failed. Try again.";
-            $messageType = "error";
-        }
-    } catch (PDOException $e) {
-        $message = "Database error: " . $e->getMessage();
+    if ($update->execute()) {
+        $message = "Application updated successfully!";
+        $messageType = "success";
+        // Refresh data
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $job = $result->fetch_assoc();
+    } else {
+        $message = "Update failed. Try again.";
         $messageType = "error";
     }
 }

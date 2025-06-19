@@ -1,74 +1,76 @@
 <?php
-
 session_start();
 include 'config.php';
-    $message = '';
-    $messageType = '';
-    $errors = [];
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Get form data
-        $firstName = trim($_POST['first_name'] ?? '');
-        $lastName = trim($_POST['last_name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+$message = '';
+$messageType = '';
+$errors = [];
 
-        // Validation
-        if (empty($firstName)) {
-            $errors['first_name'] = 'First name is required';
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
+    $firstName = trim($_POST['first_name'] ?? '');
+    $lastName = trim($_POST['last_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-        if (empty($lastName)) {
-            $errors['last_name'] = 'Last name is required';
-        }
+    // Validation
+    if (empty($firstName)) {
+        $errors['first_name'] = 'First name is required';
+    }
 
-        if (empty($email)) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email format';
-        }
+    if (empty($lastName)) {
+        $errors['last_name'] = 'Last name is required';
+    }
 
-        if (empty($password)) {
-            $errors['password'] = 'Password is required';
-        } elseif (strlen($password) < 6) {
-            $errors['password'] = 'Password must be at least 6 characters';
-        }
+    if (empty($email)) {
+        $errors['email'] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Invalid email format';
+    }
 
-        // If no errors, proceed with database insertion
-        if (empty($errors)) {
-            try {
-                // Check if email already exists
-                $checkEmail = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-                $checkEmail->execute([$email]);
-                
-                if ($checkEmail->rowCount() > 0) {
-                    $message = 'Email already exists. Please use a different email.';
-                    $messageType = 'error';
-                } else {
-                    // Hash the password
-                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    if (empty($password)) {
+        $errors['password'] = 'Password is required';
+    } elseif (strlen($password) < 6) {
+        $errors['password'] = 'Password must be at least 6 characters';
+    }
 
-                    // Insert new user
-                    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (?, ?, ?, ?)");
-                    $result = $stmt->execute([$firstName, $lastName, $email, $hashedPassword]);
+    // If no errors, proceed with database insertion
+    if (empty($errors)) {
+        // Check if email already exists
+        $checkEmail = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $checkEmail->bind_param("s", $email);
+        $checkEmail->execute();
+        $checkEmail->store_result();
 
-                    if ($result) {
-                        $message = 'Registration successful! Welcome to Job Tracker.';
-                        $messageType = 'success';
-                        // Clear form data on success
-                        $firstName = $lastName = $email = '';
-                    } else {
-                        $message = 'Registration failed. Please try again.';
-                        $messageType = 'error';
-                    }
-                }
-            } catch (PDOException $e) {
-                $message = 'Database error: ' . $e->getMessage();
+        if ($checkEmail->num_rows > 0) {
+            $message = 'Email already exists. Please use a different email.';
+            $messageType = 'error';
+        } else {
+            // Hash the password
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Insert new user
+            $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $firstName, $lastName, $email, $hashedPassword);
+            $result = $stmt->execute();
+
+            if ($result) {
+                $message = 'Registration successful! Welcome to Job Tracker.';
+                $messageType = 'success';
+                // Clear form data on success
+                $firstName = $lastName = $email = '';
+            } else {
+                $message = 'Registration failed. Please try again.';
                 $messageType = 'error';
             }
+
+            $stmt->close();
         }
+
+        $checkEmail->close();
     }
-    ?>
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">

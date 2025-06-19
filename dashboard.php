@@ -15,66 +15,68 @@ $messageType = '';
 // Handle delete action
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $jobId = intval($_GET['id']);
-    
-    try {
-        // Verify the job belongs to the current user
-        $checkStmt = $pdo->prepare("SELECT id FROM job_applications WHERE id = ? AND user_id = ?");
-        $checkStmt->execute([$jobId, $_SESSION['user_id']]);
-        
-        if ($checkStmt->fetch()) {
-            $deleteStmt = $pdo->prepare("DELETE FROM job_applications WHERE id = ? AND user_id = ?");
-            $result = $deleteStmt->execute([$jobId, $_SESSION['user_id']]);
-            
-            if ($result) {
-                $message = 'Job application deleted successfully!';
-                $messageType = 'success';
-            } else {
-                $message = 'Failed to delete job application.';
-                $messageType = 'error';
-            }
+
+    // Verify the job belongs to the current user
+    $checkSql = "SELECT id FROM job_applications WHERE id = ? AND user_id = ?";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bind_param("ii", $jobId, $_SESSION['user_id']);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows > 0) {
+        $deleteSql = "DELETE FROM job_applications WHERE id = ? AND user_id = ?";
+        $deleteStmt = $conn->prepare($deleteSql);
+        $deleteStmt->bind_param("ii", $jobId, $_SESSION['user_id']);
+        if ($deleteStmt->execute()) {
+            $message = 'Job application deleted successfully!';
+            $messageType = 'success';
         } else {
-            $message = 'Job application not found or access denied.';
+            $message = 'Failed to delete job application.';
             $messageType = 'error';
         }
-    } catch (PDOException $e) {
-        $message = 'Database error: ' . $e->getMessage();
+    } else {
+        $message = 'Job application not found or access denied.';
         $messageType = 'error';
     }
 }
 
 // Fetch job applications
-try {
-    $stmt = $pdo->prepare("
-        SELECT id, job_title, company, location, salary_range, status, application_date, 
-               application_link, notes, created_at 
-        FROM job_applications 
-        WHERE user_id = ? 
-        ORDER BY application_date DESC, created_at DESC
-    ");
-    $stmt->execute([$_SESSION['user_id']]);
-    $jobApplications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get statistics
-    $statsStmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_applications,
-            SUM(CASE WHEN status = 'Applied' THEN 1 ELSE 0 END) as applied_count,
-            SUM(CASE WHEN status = 'Interviewing' THEN 1 ELSE 0 END) as interviewing_count,
-            SUM(CASE WHEN status = 'Offer Received' THEN 1 ELSE 0 END) as offer_count,
-            SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) as rejected_count,
-            SUM(CASE WHEN status = 'Withdrawn' THEN 1 ELSE 0 END) as withdrawn_count
-        FROM job_applications 
-        WHERE user_id = ?
-    ");
-    $statsStmt->execute([$_SESSION['user_id']]);
-    $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
-    
-} catch (PDOException $e) {
-    $message = 'Database error: ' . $e->getMessage();
-    $messageType = 'error';
-    $jobApplications = [];
-    $stats = ['total_applications' => 0, 'applied_count' => 0, 'interviewing_count' => 0, 'offer_count' => 0, 'rejected_count' => 0, 'withdrawn_count' => 0];
+$jobApplications = [];
+$stats = ['total_applications' => 0, 'applied_count' => 0, 'interviewing_count' => 0, 'offer_count' => 0, 'rejected_count' => 0, 'withdrawn_count' => 0];
+
+$sql = "
+    SELECT id, job_title, company, location, salary_range, status, application_date, 
+           application_link, notes, created_at 
+    FROM job_applications 
+    WHERE user_id = ? 
+    ORDER BY application_date DESC, created_at DESC
+";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $jobApplications[] = $row;
 }
+
+// Get statistics
+$statsSql = "
+    SELECT 
+        COUNT(*) as total_applications,
+        SUM(CASE WHEN status = 'Applied' THEN 1 ELSE 0 END) as applied_count,
+        SUM(CASE WHEN status = 'Interviewing' THEN 1 ELSE 0 END) as interviewing_count,
+        SUM(CASE WHEN status = 'Offer Received' THEN 1 ELSE 0 END) as offer_count,
+        SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) as rejected_count,
+        SUM(CASE WHEN status = 'Withdrawn' THEN 1 ELSE 0 END) as withdrawn_count
+    FROM job_applications 
+    WHERE user_id = ?
+";
+$statsStmt = $conn->prepare($statsSql);
+$statsStmt->bind_param("i", $_SESSION['user_id']);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result();
+$stats = $statsResult->fetch_assoc();
 
 // Helper function to get status badge class
 function getStatusBadgeClass($status) {
@@ -99,7 +101,6 @@ function formatDate($date) {
     return date('M j, Y', strtotime($date));
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

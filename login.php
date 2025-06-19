@@ -24,52 +24,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If no errors, proceed with authentication
     if (empty($errors)) {
-        try {
-            // Check if user exists
-            $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, password FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Check if user exists
+        $stmt = $conn->prepare("SELECT id, first_name, last_name, email, password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
 
-            if ($user && password_verify($password, $user['password'])) {
-                // Login successful
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
-                $_SESSION['first_name'] = $user['first_name'];
-                $_SESSION['last_name'] = $user['last_name'];
+        if ($user && password_verify($password, $user['password'])) {
+            // Login successful
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+            $_SESSION['first_name'] = $user['first_name'];
+            $_SESSION['last_name'] = $user['last_name'];
 
-                // Show success message before redirect
-                $message = 'Login successful! Redirecting to dashboard...';
-                $messageType = 'success';
-                // Clear password field for security
-                $password = '';
-                
-                // Add JavaScript redirect after showing success message
-                echo "<script>
-                    setTimeout(function() {
-                        window.location.href = 'dashboard.php';
-                    }, 2000);
-                </script>";
+            // Show success message before redirect
+            $message = 'Login successful! Redirecting to dashboard...';
+            $messageType = 'success';
+            // Clear password field for security
+            $password = '';
+
+            // Add JavaScript redirect after showing success message
+            echo "<script>
+                setTimeout(function() {
+                    window.location.href = 'dashboard.php';
+                }, 2000);
+            </script>";
+        } else {
+            // Check specifically what went wrong
+            if (!$user) {
+                $errors['email'] = 'No account found with this email address';
             } else {
-                // Check specifically what went wrong
-                if (!$user) {
-                    $errors['email'] = 'No account found with this email address';
-                } else {
-                    $errors['password'] = 'Incorrect password';
-                }
-                $message = 'Login failed. Please check your credentials.';
-                $messageType = 'error';
+                $errors['password'] = 'Incorrect password';
             }
-        } catch (PDOException $e) {
-            $message = 'Database connection error. Please try again later.';
+            $message = 'Login failed. Please check your credentials.';
             $messageType = 'error';
-            // Log the actual error for debugging (don't show to user)
-            error_log('Login DB Error: ' . $e->getMessage());
         }
+
+        $stmt->close();
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

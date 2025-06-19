@@ -14,9 +14,11 @@ if (!isset($_GET['id'])) {
 $jobId = intval($_GET['id']);
 
 // Fetch job details
-$stmt = $pdo->prepare("SELECT * FROM job_applications WHERE id = ? AND user_id = ?");
-$stmt->execute([$jobId, $_SESSION['user_id']]);
-$job = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $conn->prepare("SELECT * FROM job_applications WHERE id = ? AND user_id = ?");
+$stmt->bind_param("ii", $jobId, $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$job = $result->fetch_assoc();
 
 if (!$job) {
     die('Job not found or access denied.');
@@ -26,7 +28,6 @@ function formatDate($date) {
     return date('M j, Y', strtotime($date));
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
