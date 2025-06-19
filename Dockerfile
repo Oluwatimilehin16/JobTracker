@@ -1,31 +1,25 @@
-# Use the official PHP image with Apache
+# Start from an official PHP image with Apache and extensions
 FROM php:8.2-apache
 
-# Install common PHP extensions and tools
+# Install system packages + MySQLi + PDO
 RUN apt-get update && apt-get install -y \
-    libcurl4-openssl-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
     unzip \
-    curl \
-    git \
-    && docker-php-ext-install curl
+    && docker-php-ext-install mysqli pdo pdo_mysql
 
-# Enable Apache mod_rewrite (common for PHP apps)
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set working directory inside container
-WORKDIR /var/www/html
+# Copy your app files to the container
+COPY . /var/www/html/
 
-# Copy the project files into the container
-COPY . /var/www/html
-
-# Set appropriate permissions
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Expose default Apache port
+# Expose port 80
 EXPOSE 80
-
-# Install PDO MySQL
-RUN docker-php-ext-install pdo pdo_mysql
-
-# Start Apache when the container launches
-CMD ["apache2-foreground"]
