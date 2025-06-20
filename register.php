@@ -55,10 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->execute();
 
             if ($result) {
-                $message = 'Registration successful! Welcome to Job Tracker.';
-                $messageType = 'success';
-                // Clear form data on success
-                $firstName = $lastName = $email = '';
+                // Automatically log the user in
+                $_SESSION['user_id'] = $stmt->insert_id;
+                $_SESSION['user_email'] = $email;
+                $_SESSION['user_name'] = $firstName . ' ' . $lastName;
+                $_SESSION['first_name'] = $firstName;
+                $_SESSION['last_name'] = $lastName;
+
+                // Redirect to dashboard
+                header("Location: dashboard.php");
+                exit;
             } else {
                 $message = 'Registration failed. Please try again.';
                 $messageType = 'error';
@@ -71,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
