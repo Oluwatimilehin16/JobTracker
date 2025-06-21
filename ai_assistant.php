@@ -107,26 +107,30 @@ TEXT;
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="dashboard.php" class="logo">
+            <a href="#" class="logo">
                 <i class="fas fa-briefcase"></i>
                 <span>JobTracker</span>
             </a>
             
-            <ul class="nav-menu">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
                 <li class="nav-item">
-                    <a href="dashboard.php" class="nav-link">
+                    <a href="#" class="nav-link">
                         <i class="fas fa-chart-line"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="add_job.php" class="nav-link">
+                    <a href="#" class="nav-link">
                         <i class="fas fa-plus-circle"></i>
                         <span>Add Job</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="ai_assistant.php" class="nav-link active">
+                    <a href="#" class="nav-link active">
                         <i class="fas fa-robot"></i>
                         <span>AI Assistant</span>
                     </a>
@@ -135,7 +139,7 @@ TEXT;
 
             <div class="user-info">
                 <span>Welcome, User!</span>
-                <a href="logout.php" class="logout-btn">
+                <a href="#" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </div>
@@ -154,41 +158,17 @@ TEXT;
 
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
-                <?php if (empty($userMessage) && empty($responseText)): ?>
-                    <div class="welcome-message">
-                        <div class="icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h2>Hello! I'm your AI Career Assistant</h2>
-                        <p>Ask me about job applications, interview preparation, career advice, or paste a job description for personalized insights. I'm here to help you succeed in your career journey!</p>
+                <div class="welcome-message">
+                    <div class="icon">
+                        <i class="fas fa-robot"></i>
                     </div>
-                <?php endif; ?>
-
-                <?php if (!empty($userMessage)): ?>
-                    <div class="message user">
-                        <div class="message-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="message-content">
-                            <?= nl2br(htmlspecialchars($userMessage)) ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (!empty($responseText)): ?>
-                    <div class="message assistant">
-                        <div class="message-avatar">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="message-content">
-                            <?= nl2br(htmlspecialchars($responseText)) ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                    <h2>Hello! I'm your AI Career Assistant</h2>
+                    <p>Ask me about job applications, interview preparation, career advice, or paste a job description for personalized insights. I'm here to help you succeed in your career journey!</p>
+                </div>
             </div>
 
             <div class="chat-input-area">
-                <form method="post" id="chatForm">
+                <form id="chatForm">
                     <div class="input-container">
                         <div class="input-wrapper">
                             <textarea 
@@ -197,8 +177,8 @@ TEXT;
                                 placeholder="Ask me anything about your career or paste a job description..."
                                 required
                                 rows="1"
-                            ><?= isset($_POST['job_description']) ? htmlspecialchars($_POST['job_description']) : '' ?></textarea>
-                            <button type="submit" class="send-button" id="sendButton">
+                            ></textarea>
+                            <button type="submit" class="send-button" id="sendButton" disabled>
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -209,6 +189,27 @@ TEXT;
     </div>
 
     <script>
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                navMenu.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            }
+        });
+
         // Auto-resize textarea
         const textarea = document.getElementById('job_description');
         const sendButton = document.getElementById('sendButton');
@@ -216,7 +217,7 @@ TEXT;
 
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            this.style.height = Math.min(this.scrollHeight, window.innerWidth < 768 ? 100 : 120) + 'px';
             
             // Enable/disable send button
             sendButton.disabled = this.value.trim() === '';
@@ -224,18 +225,61 @@ TEXT;
 
         // Handle form submission
         document.getElementById('chatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             if (textarea.value.trim() === '') {
-                e.preventDefault();
                 return;
             }
+
+            const userMessage = textarea.value.trim();
+            
+            // Add user message
+            addMessage(userMessage, 'user');
+            
+            // Clear textarea
+            textarea.value = '';
+            textarea.style.height = 'auto';
+            sendButton.disabled = true;
             
             // Show typing indicator
             showTypingIndicator();
+            
+            // Simulate AI response (replace with actual API call)
+            setTimeout(() => {
+                hideTypingIndicator();
+                addMessage("I'm here to help with your career questions! This is a demo response. In a real implementation, this would connect to an AI service to provide personalized career guidance.", 'assistant');
+            }, 2000);
         });
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = type === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            // Remove welcome message if it exists
+            const welcomeMessage = chatMessages.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
         function showTypingIndicator() {
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
+            typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = `
                 <i class="fas fa-robot"></i>
                 <span>AI is thinking</span>
@@ -249,9 +293,11 @@ TEXT;
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Auto-scroll to bottom
-        if (chatMessages.children.length > 1) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
         }
 
         // Handle Enter key (Shift+Enter for new line)
@@ -259,10 +305,29 @@ TEXT;
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 if (this.value.trim() !== '') {
-                    document.getElementById('chatForm').submit();
+                    document.getElementById('chatForm').dispatchEvent(new Event('submit'));
                 }
             }
         });
+
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                // Close mobile menu on resize
+                navMenu.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            }, 250);
+        });
+
+        // Prevent zoom on iOS when focusing inputs
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            const viewport = document.querySelector('meta[name=viewport]');
+            viewport.setAttribute('content', viewport.getAttribute('content') + ', user-scalable=no');
+        }
 
         // Initial state
         sendButton.disabled = textarea.value.trim() === '';
