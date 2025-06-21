@@ -11,7 +11,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="logo">
+            <a href="index.php" class="logo">
                 <i class="fas fa-briefcase"></i>
                 <span>JobTracker</span>
             </a>

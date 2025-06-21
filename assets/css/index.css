@@ -1,5 +1,4 @@
-
-        * {
+            * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -77,6 +76,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
 
         .btn-signin {
@@ -307,6 +307,29 @@
                 padding: 0 15px;
             }
 
+            .logo {
+                font-size: 18px;
+            }
+
+            .logo i {
+                font-size: 20px;
+            }
+
+            .nav-buttons {
+                gap: 8px;
+            }
+
+            .nav-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+                min-width: auto;
+            }
+
+            /* Hide text on very small screens, show only icons */
+            .nav-btn span {
+                display: inline;
+            }
+
             .hero {
                 padding: 60px 20px 30px;
             }
@@ -346,17 +369,83 @@
                 margin: 20px 0;
             }
 
-            .nav-buttons {
-                gap: 10px;
-            }
-
-            .nav-btn {
-                padding: 6px 12px;
-                font-size: 13px;
-            }
-
             .footer {
                 margin-top: 30px;
                 padding: 25px 0;
             }
         }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 0 10px;
+            }
+
+            .logo {
+                font-size: 16px;
+            }
+
+            .logo span {
+                display: none;
+            }
+
+            .nav-buttons {
+                gap: 6px;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+
+            /* Show only icons on extra small screens */
+            .nav-btn span {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 14px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+                margin-bottom: 30px;
+            }
+
+            .btn-primary, .btn-secondary {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+
+            .stats {
+                gap: 25px;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 360px) {
+            .nav-btn {
+                padding: 6px 10px;
+                min-width: 40px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+        }
+    

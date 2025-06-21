@@ -508,46 +508,6 @@
             }
         }
 
-        @media (max-width: 480px) {
-            .nav-container {
-                padding: 0 15px;
-            }
-
-            .nav-menu {
-                gap: 10px;
-            }
-
-            .nav-link span {
-                display: none;
-            }
-
-            .table-header {
-                padding: 15px;
-            }
-
-            th, td {
-                padding: 10px 12px;
-                font-size: 12px;
-            }
-
-            .notes-cell {
-                max-width: 120px;
-            }
-
-            .action-buttons {
-                gap: 4px;
-            }
-
-            .btn-action {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
 
         /* Delete Confirmation Modal */
         .modal {
@@ -620,4 +580,97 @@
         .btn-confirm:hover {
             background: rgba(239, 68, 68, 1);
         }
+/* Mobile Table Styles - Add after existing @media queries */
+@media (max-width: 768px) {
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
     
+    table {
+        min-width: 800px; /* Ensures table doesn't get too cramped */
+    }
+    
+    th, td {
+        white-space: nowrap;
+        min-width: 100px;
+    }
+    
+    th:first-child, td:first-child {
+        min-width: 120px; /* Job Title column */
+    }
+    
+    .notes-cell {
+        max-width: 100px;
+    }
+    
+    .action-buttons {
+        min-width: 90px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-wrapper {
+        margin: 0 -15px; /* Extend to screen edges */
+        border-radius: 0;
+    }
+    
+    .table-container {
+        border-radius: 15px 15px 0 0;
+    }
+    
+    table {
+        min-width: 700px;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+        font-size: 11px;
+        min-width: 80px;
+    }
+    
+    th:first-child, td:first-child {
+        min-width: 100px;
+        font-weight: 600;
+    }
+    
+    .notes-cell {
+        max-width: 80px;
+    }
+    
+    .status-badge {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    
+    .action-buttons {
+        min-width: 75px;
+        gap: 2px;
+    }
+    
+    .btn-action {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+}
+
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 0 15px;
+            }
+
+            .nav-menu {
+                gap: 10px;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
