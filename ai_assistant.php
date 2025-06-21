@@ -107,7 +107,7 @@ TEXT;
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="logo">
+            <a href="dashboard.php" class="logo">
                 <i class="fas fa-briefcase"></i>
                 <span>JobTracker</span>
             </a>
@@ -118,19 +118,19 @@ TEXT;
             
             <ul class="nav-menu" id="navMenu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="dashboard.php" class="nav-link">
                         <i class="fas fa-chart-line"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="add_job.php" class="nav-link">
                         <i class="fas fa-plus-circle"></i>
                         <span>Add Job</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="ai_assistant.php" class="nav-link active">
                         <i class="fas fa-robot"></i>
                         <span>AI Assistant</span>
                     </a>
