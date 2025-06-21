@@ -36,9 +36,8 @@ function askGeminiWithCurl($prompt, $apiKey) {
     $response = curl_exec($ch);
 
     if (curl_errno($ch)) {
-        echo 'cURL error: ' . curl_error($ch);
         curl_close($ch);
-        return null;
+        return "Connection error occurred. Please try again.";
     }
 
     curl_close($ch);
@@ -47,19 +46,20 @@ function askGeminiWithCurl($prompt, $apiKey) {
     if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
         return $responseData['candidates'][0]['content']['parts'][0]['text'];
     } else {
-        return "Error from API: " . $response;
+        return "I'm having trouble processing your request right now. Please try again.";
     }
 }
 
-$your_api_key = "AIzaSyDrTUqi8QYHeflEoYZfm2mzcssehiO-Wk8";
-
-$responseText = "";
-$userMessage = "";
+// Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['job_description'])) {
-    $userInput = trim($_POST['job_description']);
-    $userMessage = $userInput;
+    // Check if this is an AJAX request
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        header('Content-Type: application/json');
+        
+        $userInput = trim($_POST['job_description']);
+        $your_api_key = "AIzaSyDrTUqi8QYHeflEoYZfm2mzcssehiO-Wk8";
 
-    $defaultPrompt = <<<TEXT
+        $defaultPrompt = <<<TEXT
 You are a career assistant AI.
 
 Given a job description, extract:
@@ -86,12 +86,20 @@ Job Description:
 $userInput
 TEXT;
 
-    // If the input is not a job description, treat it as a free-form question
-    $prompt = strpos(strtolower($userInput), 'responsibilities') !== false || strpos(strtolower($userInput), 'requirements') !== false
-        ? $defaultPrompt
-        : $userInput;
+        // If the input is not a job description, treat it as a free-form question
+        $prompt = strpos(strtolower($userInput), 'responsibilities') !== false || strpos(strtolower($userInput), 'requirements') !== false
+            ? $defaultPrompt
+            : $userInput;
 
-    $responseText = askGeminiWithCurl($prompt, $your_api_key);
+        $responseText = askGeminiWithCurl($prompt, $your_api_key);
+        
+        echo json_encode([
+            'success' => true,
+            'response' => $responseText,
+            'user_message' => $userInput
+        ]);
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -223,7 +231,7 @@ TEXT;
             sendButton.disabled = this.value.trim() === '';
         });
 
-        // Handle form submission
+        // Handle form submission with AJAX
         document.getElementById('chatForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -244,11 +252,36 @@ TEXT;
             // Show typing indicator
             showTypingIndicator();
             
-            // Simulate AI response (replace with actual API call)
-            setTimeout(() => {
+            // Send AJAX request to PHP
+            const formData = new FormData();
+            formData.append('job_description', userMessage);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
                 hideTypingIndicator();
-                addMessage("I'm here to help with your career questions! This is a demo response. In a real implementation, this would connect to an AI service to provide personalized career guidance.", 'assistant');
-            }, 2000);
+                if (data.success && data.response) {
+                    addMessage(data.response, 'assistant');
+                } else {
+                    addMessage("Sorry, I couldn't process your request. Please try again.", 'assistant');
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                addMessage("Sorry, there was an error connecting to the AI. Please check your internet connection and try again.", 'assistant');
+                console.error('Error:', error);
+            });
         });
 
         function addMessage(content, type) {
@@ -261,7 +294,13 @@ TEXT;
             
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            messageContent.textContent = content;
+            
+            // Format the content properly - preserve line breaks and formatting
+            if (type === 'assistant') {
+                messageContent.innerHTML = formatAIResponse(content);
+            } else {
+                messageContent.textContent = content;
+            }
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(messageContent);
@@ -276,17 +315,37 @@ TEXT;
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        function formatAIResponse(content) {
+            // Convert line breaks to HTML
+            content = content.replace(/\n/g, '<br>');
+            
+            // Make bold text bold
+            content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Make italic text italic
+            content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Format bullet points
+            content = content.replace(/^- (.+)$/gm, '• $1');
+            
+            return content;
+        }
+
         function showTypingIndicator() {
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
             typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = `
-                <i class="fas fa-robot"></i>
-                <span>AI is thinking</span>
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-content">
+                    <span>AI is thinking</span>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
             `;
             chatMessages.appendChild(typingIndicator);
