@@ -138,8 +138,8 @@ TEXT;
             </ul>
 
             <div class="user-info">
-                <span>Welcome, User!</span>
-                <a href="#" class="logout-btn">
+                <span>Welcome, <?php echo htmlspecialchars($_SESSION['first_name']); ?>!</span>
+                <a href="logout.php" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </div>
